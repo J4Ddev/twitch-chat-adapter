@@ -1,9 +1,6 @@
 package dev.j4d.twitchchatreader.event.consumer;
 
-import dev.j4d.twitchchatreader.event.assembler.ChatMessageEventV1Assembler;
-import dev.j4d.twitchchatreader.event.assembler.ClearChatEventV1Assembler;
-import dev.j4d.twitchchatreader.event.assembler.ClearMessageEventV1Assembler;
-import dev.j4d.twitchchatreader.event.assembler.RawEventAssembler;
+import dev.j4d.twitchchatreader.event.assembler.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -11,15 +8,21 @@ public class EventConsumer {
 
     private final RawEventAssembler rawEventAssembler;
     private final ChatMessageEventV1Assembler chatMessageEventV1Assembler;
+    private final HostEnabledEventV1Assembler hostEnabledEventV1Assembler;
+    private final HostDisabledEventV1Assembler hostDisabledEventV1Assembler;
     private final ClearChatEventV1Assembler clearChatEventV1Assembler;
     private final ClearMessageEventV1Assembler clearMessageEventV1Assembler;
 
     public EventConsumer(RawEventAssembler rawEventAssembler,
                          ChatMessageEventV1Assembler chatMessageEventV1Assembler,
+                         HostEnabledEventV1Assembler hostEnabledEventV1Assembler,
+                         HostDisabledEventV1Assembler hostDisabledEventV1Assembler,
                          ClearChatEventV1Assembler clearChatEventV1Assembler,
                          ClearMessageEventV1Assembler clearMessageEventV1Assembler) {
         this.rawEventAssembler = rawEventAssembler;
         this.chatMessageEventV1Assembler = chatMessageEventV1Assembler;
+        this.hostEnabledEventV1Assembler = hostEnabledEventV1Assembler;
+        this.hostDisabledEventV1Assembler = hostDisabledEventV1Assembler;
         this.clearChatEventV1Assembler = clearChatEventV1Assembler;
         this.clearMessageEventV1Assembler = clearMessageEventV1Assembler;
     }
@@ -53,9 +56,11 @@ public class EventConsumer {
         final var eventType = metadata.getEventType();
         final var version = metadata.getVersion();
         if ("HOST_ENABLED".equals(eventType) && "V1".equals(version)) {
-
+            final var event = hostEnabledEventV1Assembler.assemble(rawEvent);
+            System.out.printf("%s HOST: %s hosted %s with %s users%n", event.getTime(), event.getChannel(), event.getTargetChannel(), event.getUserCount());
         } else if ("HOST_DISABLED".equals(eventType) && "V1".equals(version)) {
-
+            final var event = hostDisabledEventV1Assembler.assemble(rawEvent);
+            System.out.printf("%s HOST: %s exited host mode%n", event.getTime(), event.getChannel());
         }
     }
 
