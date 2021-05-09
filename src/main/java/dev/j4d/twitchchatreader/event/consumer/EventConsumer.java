@@ -66,7 +66,7 @@ public class EventConsumer {
         final var version = metadata.getVersion();
         if ("CLEAR_CHAT".equals(eventType) && "V1".equals(version)) {
             final var event = clearChatEventV1Assembler.assemble(rawEvent);
-            final var banDuration = event.getBanDuration().map(b -> "for " + b + " seconds%n").orElse("permanently");
+            final var banDuration = event.getBanDuration().map(b -> "for " + b + " seconds").orElse("permanently");
             System.out.printf("%s CLEAR_CHAT: %s in channel %s " + banDuration + "%n", event.getTime(), event.getUsername(), event.getChannel());
         } else if ("GLOBAL_CLEAR_CHAT".equals(eventType) && "V1".equals(version)) {
 
