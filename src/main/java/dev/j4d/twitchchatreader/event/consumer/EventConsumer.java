@@ -1,6 +1,7 @@
 package dev.j4d.twitchchatreader.event.consumer;
 
 import dev.j4d.twitchchatreader.event.assembler.*;
+import dev.j4d.twitchchatreader.twitchuser.service.TwitchUserService;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,19 +13,22 @@ public class EventConsumer {
     private final HostDisabledEventV1Assembler hostDisabledEventV1Assembler;
     private final ClearChatEventV1Assembler clearChatEventV1Assembler;
     private final ClearMessageEventV1Assembler clearMessageEventV1Assembler;
+    private final TwitchUserService twitchUserService;
 
     public EventConsumer(RawEventAssembler rawEventAssembler,
                          ChatMessageEventV1Assembler chatMessageEventV1Assembler,
                          HostEnabledEventV1Assembler hostEnabledEventV1Assembler,
                          HostDisabledEventV1Assembler hostDisabledEventV1Assembler,
                          ClearChatEventV1Assembler clearChatEventV1Assembler,
-                         ClearMessageEventV1Assembler clearMessageEventV1Assembler) {
+                         ClearMessageEventV1Assembler clearMessageEventV1Assembler,
+                         TwitchUserService twitchUserService) {
         this.rawEventAssembler = rawEventAssembler;
         this.chatMessageEventV1Assembler = chatMessageEventV1Assembler;
         this.hostEnabledEventV1Assembler = hostEnabledEventV1Assembler;
         this.hostDisabledEventV1Assembler = hostDisabledEventV1Assembler;
         this.clearChatEventV1Assembler = clearChatEventV1Assembler;
         this.clearMessageEventV1Assembler = clearMessageEventV1Assembler;
+        this.twitchUserService = twitchUserService;
     }
 
     public void consumeChatMessageEvent(String eventJson) {
@@ -34,6 +38,7 @@ public class EventConsumer {
         final var version = metadata.getVersion();
         if ("CHAT_MESSAGE".equals(eventType) && "V1".equals(version)) {
             final var event = chatMessageEventV1Assembler.assemble(rawEvent);
+            twitchUserService.handleChatMessage(event);
             System.out.printf("%s [%s] %s: %s%n", event.getTime(), event.getChannel(), event.getUsername(), event.getMessage());
         }
     }
